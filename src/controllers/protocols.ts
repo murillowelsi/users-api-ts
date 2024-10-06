@@ -10,6 +10,8 @@ export interface HttpResponse<T> {
 
 export interface HttpRequest<B> {
   body?: B;
-  params?: unknown;
+  params?: {
+    id?: string;
+  };
   headers?: unknown;
 }
