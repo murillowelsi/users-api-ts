@@ -1,39 +1,32 @@
 import { User } from "../../models/user";
-import { ErrorBody, HttpRequest, HttpResponse } from "../protocols";
-import { IDeleteUserControler, IDeleteUserRepository } from "./protocols";
+import { badRequest, internalServerError, ok } from "../helpers";
+import {
+  ErrorBody,
+  HttpRequest,
+  HttpResponse,
+  IController,
+} from "../protocols";
+import { IDeleteUserRepository } from "./protocols";
 
-export class DeleteUserController implements IDeleteUserControler {
+export class DeleteUserController implements IController {
   constructor(private readonly deleteUserRepository: IDeleteUserRepository) {}
 
   async handle(
     httpRequest: HttpRequest<unknown>
-  ): Promise<HttpResponse<User | ErrorBody>> {
+  ): Promise<HttpResponse<User | ErrorBody | string>> {
     try {
       const id = httpRequest.params?.id;
       if (!id) {
-        return {
-          statusCode: 400,
-          body: {
-            error: "Bad Request",
-            message: "UserId is missing.",
-          },
-        };
+        return badRequest("User id is missing.");
       }
 
       const user = await this.deleteUserRepository.deleteUser(id);
 
-      return {
-        statusCode: 200,
-        body: user,
-      };
+      return ok(user);
     } catch (error) {
-      return {
-        statusCode: 500,
-        body: {
-          error: "Internal Server Error",
-          message: error instanceof Error ? error.message : String(error),
-        },
-      };
+      return internalServerError(
+        error instanceof Error ? error.message : String(error)
+      );
     }
   }
 }

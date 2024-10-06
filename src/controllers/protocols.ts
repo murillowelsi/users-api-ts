@@ -15,3 +15,9 @@ export interface HttpRequest<B> {
   };
   headers?: unknown;
 }
+
+export interface IController {
+  handle(
+    httpRequest: HttpRequest<unknown>
+  ): Promise<HttpResponse<unknown | ErrorBody>>;
+}

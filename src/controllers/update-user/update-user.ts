@@ -1,28 +1,28 @@
 import { User } from "../../models/user";
-import { ErrorBody, HttpRequest, HttpResponse } from "../protocols";
+import { badRequest, internalServerError, ok } from "../helpers";
 import {
-  IUpdateUserController,
-  IUpdateUserRepository,
-  UpdateUserParams,
-} from "./protocols";
+  ErrorBody,
+  HttpRequest,
+  HttpResponse,
+  IController,
+} from "../protocols";
+import { IUpdateUserRepository, UpdateUserParams } from "./protocols";
 
-export class UpdateUserController implements IUpdateUserController {
+export class UpdateUserController implements IController {
   constructor(private readonly updateUserRepository: IUpdateUserRepository) {}
   async handle(
-    httpRequest: HttpRequest<unknown>
-  ): Promise<HttpResponse<User | ErrorBody>> {
+    httpRequest: HttpRequest<UpdateUserParams>
+  ): Promise<HttpResponse<User | ErrorBody | string>> {
     try {
       const id = httpRequest?.params?.id;
       const body = httpRequest?.body as UpdateUserParams;
 
+      if (!body) {
+        return badRequest("Body missing required fields.");
+      }
+
       if (!id) {
-        return {
-          statusCode: 400,
-          body: {
-            error: "Bad Request",
-            message: "UserId is missing.",
-          },
-        };
+        return badRequest("User id is missing.");
       }
 
       const allowedFieldsToUpdate: (keyof UpdateUserParams)[] = [
@@ -30,34 +30,22 @@ export class UpdateUserController implements IUpdateUserController {
         "lastname",
         "password",
       ];
+
       const someFieldIsNotAllowedToBeUpdated = Object.keys(body).some(
         (key) => !allowedFieldsToUpdate.includes(key as keyof UpdateUserParams)
       );
 
       if (someFieldIsNotAllowedToBeUpdated) {
-        return {
-          statusCode: 400,
-          body: {
-            error: "Bad Request",
-            message: "Some received field is not allowed to be updated.",
-          },
-        };
+        return badRequest("Some received field is not allowed to be updated.");
       }
 
       const user = await this.updateUserRepository.updateUser(id, body);
 
-      return {
-        statusCode: 200,
-        body: user,
-      };
+      return ok<User>(user);
     } catch (error) {
-      return {
-        statusCode: 500,
-        body: {
-          error: "Internal Server Error",
-          message: error instanceof Error ? error.message : String(error),
-        },
-      };
+      return internalServerError(
+        error instanceof Error ? error.message : String(error)
+      );
     }
   }
 }
