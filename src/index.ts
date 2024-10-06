@@ -15,7 +15,7 @@ const main = async () => {
 
   const app = express();
   app.use(express.json());
-  const port = process.env.PORT || 8000;
+  const port = parseInt(process.env.PORT || "8000", 10);
 
   await MongoClient.connect();
 
@@ -64,7 +64,7 @@ const main = async () => {
     res.status(statusCode).send(body);
   });
 
-  app.listen(port, () => {
+  app.listen(port, "0.0.0.0", () => {
     console.log(`Server is up and running on port ${port}! 🚀`);
   });
 };
