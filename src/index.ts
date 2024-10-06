@@ -63,7 +63,7 @@ const main = async () => {
     res.status(statusCode).send(body);
   });
 
-  const port = process.env.PORT || 8000;
+  const port = process.env.PORT || 3000;
 
   app.listen(Number(port), "0.0.0.0", () => {
     console.log(`Server is up and running on port ${port}! 🚀`);
