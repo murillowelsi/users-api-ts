@@ -5,7 +5,7 @@ export interface ErrorBody {
 
 export interface HttpResponse<T> {
   statusCode: number;
-  body: T | ErrorBody;
+  body?: T | ErrorBody;
 }
 
 export interface HttpRequest<B> {
